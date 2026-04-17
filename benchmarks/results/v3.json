@@ -1,0 +1,20 @@
+{
+  "num_products": 20,
+  "num_field_comparisons": 360,
+  "metrics": {
+    "total_fields": 360,
+    "score_targets": 360,
+    "matches": 261,
+    "mismatches": 2,
+    "ocr_nulls": 0,
+    "not_found": 0,
+    "both_nulls": 97,
+    "match_rate": 0.9944,
+    "true_match_rate": 0.9924,
+    "mismatch_rate": 0.0056,
+    "ocr_null_rate": 0.0,
+    "coverage": 1.0
+  },
+  "oqs": 0.9955,
+  "grade": "A"
+}
