@@ -1,0 +1,57 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "termsheet-extraction-eval"
+version = "0.1.0"
+description = "Reference architecture for evaluating LLM-extracted structured financial data against ground truth"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { file = "LICENSE" }
+authors = [{ name = "inherent-vice" }]
+keywords = ["llm", "evaluation", "audit", "extraction", "financial"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = []
+
+[project.optional-dependencies]
+openai = ["openai>=1.0"]
+anthropic = ["anthropic>=0.18"]
+gemini = ["google-generativeai>=0.4"]
+all = [
+    "openai>=1.0",
+    "anthropic>=0.18",
+    "google-generativeai>=0.4",
+]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov",
+    "ruff",
+]
+
+[project.scripts]
+termsheet-eval = "termsheet_eval.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/inherent-vice/termsheet-extraction-eval"
+Issues = "https://github.com/inherent-vice/termsheet-extraction-eval/issues"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
