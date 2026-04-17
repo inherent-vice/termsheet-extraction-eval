@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "TermSheetExtraction",
+  "description": "Structured financial product term-sheet extraction schema",
+  "properties": {
+    "issue_date": { "type": ["string", "null"], "format": "date" },
+    "maturity_date": { "type": ["string", "null"], "format": "date" },
+    "first_coupon_date": { "type": ["string", "null"], "format": "date" },
+    "penultimate_coupon_date": { "type": ["string", "null"], "format": "date" },
+    "option_end_date": { "type": ["string", "null"], "format": "date" },
+    "notional_amount": { "type": ["number", "null"] },
+    "coupon_rate": { "type": ["number", "null"] },
+    "spread": { "type": ["number", "null"] },
+    "cap_rate": { "type": ["number", "null"] },
+    "floor_rate": { "type": ["number", "null"] },
+    "range_upper": { "type": ["number", "null"] },
+    "range_lower": { "type": ["number", "null"] },
+    "currency": { "type": ["string", "null"] },
+    "issuer": { "type": ["string", "null"] },
+    "item_name": { "type": ["string", "null"] },
+    "day_count_method": {
+      "type": ["string", "null"],
+      "enum": ["ACT/365", "ACT/360", "30/360", "ACT/ACT", null]
+    },
+    "option_holder": {
+      "type": ["string", "null"],
+      "enum": ["B", "S", "Callable", "Putable", null]
+    },
+    "fixed_flag": { "type": ["integer", "null"], "enum": [0, 1, null] }
+  },
+  "additionalProperties": false
+}
