@@ -21,7 +21,6 @@ from typing import Iterable
 from termsheet_eval.compare.result import (
     ComparisonResult,
     FieldComparison,
-    MATCH_RESULTS,
     SCORE_TARGETS,
 )
 

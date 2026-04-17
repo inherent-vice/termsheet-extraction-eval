@@ -11,14 +11,13 @@ from typing import Any
 
 from termsheet_eval.compare.comparators import compare_by_type, FIELD_TYPES
 from termsheet_eval.compare.result import (
-    ComparisonResult,
     FieldComparison,
     ProductComparison,
 )
 from termsheet_eval.constraints.engine import ConstraintEngine
 from termsheet_eval.extract.base import Extractor
 from termsheet_eval.inference.null_inference import NullInferenceEngine
-from termsheet_eval.metrics.core import MetricsReport, compute_metrics
+from termsheet_eval.metrics.core import compute_metrics
 from termsheet_eval.metrics.scoring import compute_oqs, grade_oqs
 
 

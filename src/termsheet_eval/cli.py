@@ -13,7 +13,7 @@ from pathlib import Path
 from typing import Any
 
 from termsheet_eval.extract.mock_client import MockExtractor
-from termsheet_eval.pipeline import CONFIGS, Pipeline, PipelineConfig
+from termsheet_eval.pipeline import CONFIGS, Pipeline
 
 
 ROOT = Path(__file__).resolve().parents[2]
