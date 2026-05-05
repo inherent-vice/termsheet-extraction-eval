@@ -31,4 +31,4 @@ under-appreciated half.
 
 - 360 field comparisons total (20 × 18)
 - Deterministic mock extractor means benchmark is 100% reproducible
-- `pip install -e . && python -m termsheet_eval.cli benchmark --version all`
+- `python3 -m venv .venv && source .venv/bin/activate && python -m pip install -e . && python -m termsheet_eval.cli benchmark --version all`

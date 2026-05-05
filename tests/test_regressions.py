@@ -7,6 +7,7 @@ from termsheet_eval.compare.comparators import (
     compare_numeric,
 )
 from termsheet_eval.compare.result import ComparisonResult
+from termsheet_eval.constraints.engine import ConstraintEngine
 from termsheet_eval.inference.null_inference import NullInferenceEngine
 
 
@@ -35,3 +36,12 @@ def test_null_inference_uses_normalized_null_sentinels() -> None:
     )
     assert extracted["day_count_method"] == "ACT/365"
     assert applied == ["A:day_count_method"]
+
+
+def test_option_end_date_is_capped_at_maturity_with_field_reason() -> None:
+    engine = ConstraintEngine()
+    extracted, applied = engine.apply(
+        {"option_end_date": "2027-06-30", "maturity_date": "2026-12-31"}
+    )
+    assert extracted["option_end_date"] == "2026-12-31"
+    assert applied == ["B:option_end_capped_at_maturity:option_end_date"]

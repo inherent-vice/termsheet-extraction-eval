@@ -6,7 +6,7 @@ This repository is a sanitized reference architecture for evaluating LLM-extract
 
 ## Reporting a vulnerability
 
-Please report security issues through GitHub Issues with a minimal reproduction and mark the report as security-related. Do not include real customer data, proprietary term sheets, API keys, credentials, private prompts, or database connection details in the report.
+Please use GitHub Private Vulnerability Reporting / Security Advisories when available, or contact the maintainer privately before filing a public issue. Public issues are fine for non-sensitive bugs only. Do not include real customer data, proprietary term sheets, API keys, credentials, private prompts, or database connection details in any report.
 
 ## Data and credential handling
 

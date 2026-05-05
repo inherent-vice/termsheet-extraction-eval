@@ -20,7 +20,7 @@ domain-specific rules and full constraint/inference engines remain proprietary.
 
 - **Extractor adapter interface** — deterministic Mock extractor included; OpenAI / Anthropic / Gemini dependencies are optional extension points
 - **Type-aware field comparison** — rate, numeric amount, date, spread, currency, enum, text
-- **3-tier scoring** — `MATCH` / `BOTH_NULL` / `MISMATCH` / `OCR_NULL` / `NOT_FOUND`
+- **Explicit result taxonomy** — `MATCH` / `BOTH_NULL` / `MISMATCH` / `OCR_NULL` / `NOT_FOUND`
 - **Cross-field constraint engine** — resolves dependencies between extracted fields
 - **NULL inference engine** — distinguishes OCR failures from genuine absence
 - **Multi-dimensional metrics** — match rate, true match rate, OQS, per-category breakdown
@@ -90,22 +90,19 @@ fixed-rate spread defaults and range-bound saturation). v3 adds another
 callable default holder = B).
 
 > The raw LLM output is **unchanged** across versions. The demonstrated
-> improvement comes entirely from post-processing. This is the critical
-> lesson from production: type-aware comparators and constraint/inference
-> engines recover more accuracy than most prompt improvements.
-
-> The **raw extraction accuracy is intentionally unchanged** across versions.
-> The gain comes entirely from post-processing — constraint resolution and
-> null inference — because that is where audit-grade systems actually make
-> their money in production.
+> improvement comes entirely from post-processing — type-aware comparators,
+> constraint resolution, and null inference — because that is where
+> audit-grade extraction systems catch silent failures in production.
 
 Run it yourself:
 
 ```bash
+python3 -m venv .venv
+source .venv/bin/activate
 python -m pip install -e '.[dev]'
 python -m termsheet_eval.cli benchmark --version all
 
-# Or use the convenience targets
+# Or use the convenience targets from the activated venv
 make test
 make benchmark
 ```
@@ -136,12 +133,14 @@ This package encodes the patterns that catch those silent failures:
 ```bash
 git clone https://github.com/inherent-vice/termsheet-extraction-eval
 cd termsheet-extraction-eval
+python3 -m venv .venv
+source .venv/bin/activate
 python -m pip install -e '.[dev]'
 
 # Run full benchmark across v1/v2/v3 with mock extractor (no API key needed)
 python -m termsheet_eval.cli benchmark --version all
 
-# Equivalent Make target
+# Equivalent Make target from the activated venv
 make benchmark
 
 # Run single version
@@ -167,7 +166,7 @@ python -m termsheet_eval.cli compare \
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — detailed system design
 - [docs/PROMPT_ENGINEERING.md](docs/PROMPT_ENGINEERING.md) — v1 → v3 iteration log
 - [data/synthetic/README.md](data/synthetic/README.md) — synthetic fixture provenance and error patterns
-- [CLAUDE.md](CLAUDE.md) — Claude Code working notes
+- [CONTRIBUTING.md](CONTRIBUTING.md) — sanitized contribution and verification guide
 
 ---
 
@@ -177,7 +176,7 @@ python -m termsheet_eval.cli compare \
 - No proprietary term sheets, customer records, SQL Server schemas, API keys, or private prompts are included.
 - The bundled `MockExtractor` makes the main benchmark deterministic and does not call external LLM APIs.
 - Optional OpenAI / Anthropic / Gemini extras are extension points only; provider keys should be supplied through the environment and must never be committed.
-- CI runs lint, tests, and the ablation gate on Python 3.10 / 3.11 / 3.12.
+- CI runs lint, tests, benchmark drift checks, and the ablation gate on Python 3.10 / 3.11 / 3.12.
 
 ## Limitations and failure modes
 
@@ -194,7 +193,7 @@ python -m termsheet_eval.cli compare \
 The production version at KAP covers 89 fields × 410 derivative products
 (structured notes, structured swaps, IRS), with 7 constraint groups, 5 NULL
 inference categories, 22 metrics, and 13 versioned prompts reaching OQS 92.52%.
-Available for discussion under NDA.
+Production details are available for discussion under NDA.
 
 ---
 

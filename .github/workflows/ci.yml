@@ -21,13 +21,13 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install
         run: |
-          pip install -e .[dev]
+          python -m pip install -e .[dev]
       - name: Lint
         run: |
-          ruff check src/ tests/
+          python -m ruff check src/ tests/
       - name: Test
         run: |
-          pytest tests/ -v
+          python -m pytest tests/ -v
       - name: Benchmark (ablation gate)
         run: |
           python -m termsheet_eval.cli benchmark --version all --write
@@ -41,3 +41,4 @@ jobs:
           assert v3 >= 0.99, f'v3 match rate regressed below 0.99: {v3:.3f}'
           print(f'Ablation gate passed: v1={v1:.3f} → v3={v3:.3f}')
           "
+          git diff --exit-code benchmarks/results

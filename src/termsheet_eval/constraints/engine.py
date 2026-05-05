@@ -130,7 +130,7 @@ class ConstraintEngine:
 
             elif rule.name == "option_end_capped_at_maturity":
                 rec["option_end_date"] = rec["maturity_date"]
-                applied.append(f"{rule.group}:{rule.name}")
+                applied.append(f"{rule.group}:{rule.name}:option_end_date")
 
             elif rule.name == "range_bound_saturation":
                 for bound_fld in ("range_upper", "range_lower"):

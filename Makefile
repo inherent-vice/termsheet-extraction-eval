@@ -1,4 +1,4 @@
-PYTHON ?= python
+PYTHON ?= python3
 
 .PHONY: install test lint benchmark compare ci clean
 
@@ -24,5 +24,5 @@ compare:
 ci: lint test benchmark
 
 clean:
-	rm -rf .pytest_cache .ruff_cache build dist *.egg-info benchmarks/results
+	rm -rf .pytest_cache .ruff_cache build dist *.egg-info
 	find . -type d -name __pycache__ -prune -exec rm -rf {} +
