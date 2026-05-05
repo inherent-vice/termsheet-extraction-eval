@@ -1,0 +1,18 @@
+cff-version: 1.2.0
+message: "If you use this reference architecture, please cite the repository."
+title: "termsheet-extraction-eval"
+type: software
+authors:
+  - name: "inherent-vice"
+repository-code: "https://github.com/inherent-vice/termsheet-extraction-eval"
+url: "https://github.com/inherent-vice/termsheet-extraction-eval"
+abstract: "Reference architecture for evaluating LLM-extracted structured financial data against synthetic ground truth, with type-aware comparison, constraints, null inference, and ablation metrics."
+license: MIT
+version: "0.1.0"
+date-released: "2026-04-17"
+keywords:
+  - llm
+  - evaluation
+  - audit
+  - extraction
+  - structured-finance

@@ -19,33 +19,35 @@ from termsheet_eval.pipeline import CONFIGS, Pipeline
 ROOT = Path(__file__).resolve().parents[2]
 DATA_DIR = ROOT / "data" / "synthetic"
 RESULTS_DIR = ROOT / "benchmarks" / "results"
+DEFAULT_GROUND_TRUTH_PATH = DATA_DIR / "ground_truth.json"
+DEFAULT_RAW_EXTRACTIONS_PATH = DATA_DIR / "raw_extractions.json"
 
 
-def _load_synthetic() -> tuple[dict[str, Any], Path]:
-    gt_path = DATA_DIR / "ground_truth.json"
-    extractions_path = DATA_DIR / "raw_extractions.json"
-    if not gt_path.exists() or not extractions_path.exists():
+def _load_synthetic(
+    ground_truth_path: Path = DEFAULT_GROUND_TRUTH_PATH,
+    raw_extractions_path: Path = DEFAULT_RAW_EXTRACTIONS_PATH,
+) -> tuple[dict[str, Any], Path]:
+    if not ground_truth_path.exists() or not raw_extractions_path.exists():
         sys.exit(
-            f"Synthetic data not found at {DATA_DIR}. "
-            "Run from the repo root after cloning."
+            "Synthetic data not found. "
+            f"ground_truth={ground_truth_path} raw_extractions={raw_extractions_path}"
         )
-    with gt_path.open() as f:
+    with ground_truth_path.open(encoding="utf-8") as f:
         ground_truth = json.load(f)
-    return ground_truth, extractions_path
+    return ground_truth, raw_extractions_path
 
 
-def _build_pipeline(version: str) -> Pipeline:
+def _build_pipeline(version: str, raw_extractions_path: Path = DEFAULT_RAW_EXTRACTIONS_PATH) -> Pipeline:
     config = CONFIGS.get(version)
     if config is None:
         sys.exit(f"Unknown version '{version}'. Choices: {list(CONFIGS)}")
-    _, extractions_path = _load_synthetic()
-    extractor = MockExtractor(raw_extractions_path=extractions_path)
+    extractor = MockExtractor(raw_extractions_path=raw_extractions_path)
     return Pipeline(extractor=extractor, config=config)
 
 
 def cmd_benchmark(args: argparse.Namespace) -> int:
     versions = ["v1", "v2", "v3"] if args.version == "all" else [args.version]
-    ground_truth, _ = _load_synthetic()
+    ground_truth, raw_extractions_path = _load_synthetic(args.ground_truth, args.raw_extractions)
 
     print("━" * 72)
     print(f"{'Version':<8} {'Match Rate':<12} {'True Match':<12} {'OQS':<8} {'Grade':<6}")
@@ -53,7 +55,7 @@ def cmd_benchmark(args: argparse.Namespace) -> int:
 
     all_reports: dict[str, Any] = {}
     for version in versions:
-        pipeline = _build_pipeline(version)
+        pipeline = _build_pipeline(version, raw_extractions_path)
         comparisons = pipeline.run_all(ground_truth)
         summary = pipeline.summarize(comparisons)
         all_reports[version] = summary
@@ -87,8 +89,8 @@ def cmd_benchmark(args: argparse.Namespace) -> int:
 
 
 def cmd_compare(args: argparse.Namespace) -> int:
-    ground_truth, _ = _load_synthetic()
-    pipeline = _build_pipeline(args.version)
+    ground_truth, raw_extractions_path = _load_synthetic(args.ground_truth, args.raw_extractions)
+    pipeline = _build_pipeline(args.version, raw_extractions_path)
 
     if args.product_id not in ground_truth:
         sys.exit(f"Unknown product id '{args.product_id}'")
@@ -120,6 +122,18 @@ def main(argv: list[str] | None = None) -> int:
         help="Pipeline version to run (default: all)",
     )
     p_bench.add_argument(
+        "--ground-truth",
+        type=Path,
+        default=DEFAULT_GROUND_TRUTH_PATH,
+        help="Ground-truth JSON fixture path",
+    )
+    p_bench.add_argument(
+        "--raw-extractions",
+        type=Path,
+        default=DEFAULT_RAW_EXTRACTIONS_PATH,
+        help="Raw/mock extraction JSON fixture path",
+    )
+    p_bench.add_argument(
         "--write",
         action="store_true",
         help="Persist results to benchmarks/results/",
@@ -129,6 +143,18 @@ def main(argv: list[str] | None = None) -> int:
     p_compare = sub.add_parser("compare", help="Compare one product")
     p_compare.add_argument("--product-id", required=True)
     p_compare.add_argument("--version", default="v3", choices=["v1", "v2", "v3"])
+    p_compare.add_argument(
+        "--ground-truth",
+        type=Path,
+        default=DEFAULT_GROUND_TRUTH_PATH,
+        help="Ground-truth JSON fixture path",
+    )
+    p_compare.add_argument(
+        "--raw-extractions",
+        type=Path,
+        default=DEFAULT_RAW_EXTRACTIONS_PATH,
+        help="Raw/mock extraction JSON fixture path",
+    )
     p_compare.set_defaults(func=cmd_compare)
 
     args = parser.parse_args(argv)

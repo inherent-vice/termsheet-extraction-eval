@@ -60,6 +60,24 @@ def compare_rate(extracted: Any, ground_truth: Any, tol: float = 1e-4) -> Compar
     return ComparisonResult.MISMATCH
 
 
+# ---------- Numeric ----------
+
+def compare_numeric(extracted: Any, ground_truth: Any, tol: float = 1e-9) -> ComparisonResult:
+    """Compare exact numeric quantities without rate/basis-point scaling.
+
+    Monetary notionals and counts are not rates: a 100x unit rescue that is
+    valid for interest-rate fields is a silent false-positive for amounts.
+    """
+    early, ne, ng = _null_resolution(extracted, ground_truth)
+    if early is not None:
+        return early
+    xe = normalize_numeric(ne)
+    xg = normalize_numeric(ng)
+    if xe is None or xg is None:
+        return ComparisonResult.MISMATCH
+    return ComparisonResult.MATCH if abs(xe - xg) <= tol else ComparisonResult.MISMATCH
+
+
 # ---------- Spread ----------
 
 
@@ -114,14 +132,15 @@ def compare_date(extracted: Any, ground_truth: Any) -> ComparisonResult:
 
 # ---------- Currency ----------
 
-# Minimal code table — illustrative only (production has 30+ currencies
-# with separate SN vs SSW mappings).
+# Minimal code table — illustrative only. Numeric aliases are intentionally
+# disjoint; otherwise ambiguous code spaces create silent false positives
+# (for example, "1" must not match both KRW and USD).
 _CURRENCY_CODES = {
-    "krw": {"krw", "1", "0"},
-    "usd": {"usd", "2", "1"},
-    "eur": {"eur", "3", "2"},
-    "jpy": {"jpy", "4", "3"},
-    "gbp": {"gbp", "5", "4"},
+    "krw": {"krw", "1"},
+    "usd": {"usd", "2"},
+    "eur": {"eur", "3"},
+    "jpy": {"jpy", "4"},
+    "gbp": {"gbp", "5"},
 }
 
 
@@ -176,6 +195,13 @@ def compare_text(
 # ---------- Boolean / enum ----------
 
 
+def _canonical_enum(value: str, mapping: dict[str, str]) -> str:
+    """Apply a case-insensitive enum alias map and return a lowercase token."""
+    lowered = value.lower()
+    lowered_mapping = {str(k).lower(): str(v).lower() for k, v in mapping.items()}
+    return lowered_mapping.get(lowered, lowered)
+
+
 def compare_enum(
     extracted: Any, ground_truth: Any, mapping: dict[str, str] | None = None
 ) -> ComparisonResult:
@@ -187,9 +213,7 @@ def compare_enum(
     if early is not None:
         return early
     if mapping:
-        canon_e = mapping.get(ne, ne)  # type: ignore[arg-type]
-        canon_g = mapping.get(ng, ng)  # type: ignore[arg-type]
-        if canon_e == canon_g:
+        if _canonical_enum(str(ne), mapping) == _canonical_enum(str(ng), mapping):
             return ComparisonResult.MATCH
     if str(ne).lower() == str(ng).lower():
         return ComparisonResult.MATCH
@@ -227,11 +251,23 @@ _DISPATCHER = {
     "currency": compare_currency,
     "text": compare_text,
     "enum": compare_enum,
-    "numeric": compare_rate,  # reuse rate tolerance
+    "numeric": compare_numeric,
+}
+
+_FIELD_ENUM_MAPPINGS: dict[str, dict[str, str]] = {
+    "option_holder": {
+        "callable": "B",
+        "putable": "S",
+        "issuer": "B",
+        "investor": "S",
+    },
 }
 
 
 def compare_by_type(field: str, extracted: Any, ground_truth: Any) -> ComparisonResult:
     """Dispatch comparison by field type."""
     ftype = FIELD_TYPES.get(field, "text")
-    return _DISPATCHER[ftype](extracted, ground_truth)
+    comparator = _DISPATCHER[ftype]
+    if ftype == "enum":
+        return comparator(extracted, ground_truth, _FIELD_ENUM_MAPPINGS.get(field))
+    return comparator(extracted, ground_truth)

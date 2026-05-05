@@ -44,7 +44,7 @@ products, reaching OQS 92.52%):
                        ▼
      ┌───────────────────────────────────────────┐
      │  Comparator (per field, by type)          │
-     │  rate  │ date  │ spread  │ currency │ text│
+     │  rate  │ numeric │ date │ spread │ currency │ enum │ text │
      │  → ComparisonResult                        │
      └─────────────────┬─────────────────────────┘
                        │ comparison_results: dict[field, Result]

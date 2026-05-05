@@ -1,5 +1,9 @@
 # termsheet-extraction-eval
 
+[![CI](https://github.com/inherent-vice/termsheet-extraction-eval/actions/workflows/ci.yml/badge.svg)](https://github.com/inherent-vice/termsheet-extraction-eval/actions/workflows/ci.yml)
+![Python](https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12-blue)
+![License: MIT](https://img.shields.io/badge/license-MIT-green)
+
 > Reference architecture for evaluating LLM-extracted structured financial data
 > against a ground-truth database.
 
@@ -14,8 +18,8 @@ domain-specific rules and full constraint/inference engines remain proprietary.
 
 ## What this demonstrates
 
-- **Multi-provider LLM extraction** — pluggable adapters (OpenAI / Anthropic / Gemini / Mock)
-- **Type-aware field comparison** — rate, date, spread, currency, text
+- **Extractor adapter interface** — deterministic Mock extractor included; OpenAI / Anthropic / Gemini dependencies are optional extension points
+- **Type-aware field comparison** — rate, numeric amount, date, spread, currency, enum, text
 - **3-tier scoring** — `MATCH` / `BOTH_NULL` / `MISMATCH` / `OCR_NULL` / `NOT_FOUND`
 - **Cross-field constraint engine** — resolves dependencies between extracted fields
 - **NULL inference engine** — distinguishes OCR failures from genuine absence
@@ -42,7 +46,7 @@ domain-specific rules and full constraint/inference engines remain proprietary.
        ▼
 ┌──────────────────────────────────────────────────────────────┐
 │  Stage 2: Compare (per field)                                 │
-│    normalize → type-dispatch (rate/date/spread/currency/text) │
+│    normalize → type-dispatch (rate/numeric/date/currency/etc.) │
 │    → {MATCH, MISMATCH, BOTH_NULL, OCR_NULL, NOT_FOUND}        │
 └──────┬───────────────────────────────────────────────────────┘
        │
@@ -81,9 +85,9 @@ domain-specific rules and full constraint/inference engines remain proprietary.
 | **v3** | + NULL inference engine | **99.4%** | **99.2%** | **0.996** | **A** |
 
 **Ablation**: v2 adds **+4.7 percentage points** (constraint recovery of
-range bound saturation and option-end overflow). v3 adds another **+5.6pp**
-(inference recovery of silent defaults — fixed-rate spread=0, KRW day
-count = ACT/365, callable default holder = B).
+fixed-rate spread defaults and range-bound saturation). v3 adds another
+**+5.6pp** (NULL inference recovery of KRW day count = ACT/365 and
+callable default holder = B).
 
 > The raw LLM output is **unchanged** across versions. The demonstrated
 > improvement comes entirely from post-processing. This is the critical
@@ -98,8 +102,12 @@ count = ACT/365, callable default holder = B).
 Run it yourself:
 
 ```bash
-pip install -e .
+python -m pip install -e '.[dev]'
 python -m termsheet_eval.cli benchmark --version all
+
+# Or use the convenience targets
+make test
+make benchmark
 ```
 
 ---
@@ -128,18 +136,26 @@ This package encodes the patterns that catch those silent failures:
 ```bash
 git clone https://github.com/inherent-vice/termsheet-extraction-eval
 cd termsheet-extraction-eval
-pip install -e .
+python -m pip install -e '.[dev]'
 
 # Run full benchmark across v1/v2/v3 with mock extractor (no API key needed)
 python -m termsheet_eval.cli benchmark --version all
 
+# Equivalent Make target
+make benchmark
+
 # Run single version
 python -m termsheet_eval.cli benchmark --version v3
 
-# Compare specific term sheet
+# Compare specific term sheet with bundled fixtures
 python -m termsheet_eval.cli compare \
-    --term-sheet data/synthetic/term_sheets.json \
+    --product-id TS001 \
+    --version v3
+
+# Or provide explicit fixture paths
+python -m termsheet_eval.cli compare \
     --ground-truth data/synthetic/ground_truth.json \
+    --raw-extractions data/synthetic/raw_extractions.json \
     --product-id TS001 \
     --version v3
 ```
@@ -150,7 +166,26 @@ python -m termsheet_eval.cli compare \
 
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — detailed system design
 - [docs/PROMPT_ENGINEERING.md](docs/PROMPT_ENGINEERING.md) — v1 → v3 iteration log
+- [data/synthetic/README.md](data/synthetic/README.md) — synthetic fixture provenance and error patterns
 - [CLAUDE.md](CLAUDE.md) — Claude Code working notes
+
+---
+
+## Reproducibility, data provenance, and privacy
+
+- The benchmark data is **synthetic** and intentionally small enough for CI.
+- No proprietary term sheets, customer records, SQL Server schemas, API keys, or private prompts are included.
+- The bundled `MockExtractor` makes the main benchmark deterministic and does not call external LLM APIs.
+- Optional OpenAI / Anthropic / Gemini extras are extension points only; provider keys should be supplied through the environment and must never be committed.
+- CI runs lint, tests, and the ablation gate on Python 3.10 / 3.11 / 3.12.
+
+## Limitations and failure modes
+
+- This is a **reference architecture**, not the full KAP production engine.
+- Synthetic fixtures demonstrate error classes and recovery behavior; they are not a representative market dataset.
+- Numeric currency aliases in fixtures are synthetic demo codes, not ISO numeric currency codes.
+- `compare_numeric` intentionally avoids rate-style 100× scaling for amount fields; real notional extraction with rounding or unit suffixes should add an explicit unit-normalization policy.
+- The benchmark proves regression behavior for the included fixtures, not universal LLM extraction accuracy.
 
 ---
 

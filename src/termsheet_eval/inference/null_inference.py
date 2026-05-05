@@ -23,6 +23,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any, Callable
 
+from termsheet_eval.compare.normalizer import normalize_value
 from termsheet_eval.compare.result import ComparisonResult
 
 
@@ -101,7 +102,7 @@ class NullInferenceEngine:
                 continue
             if not rule.applies_when(rec):
                 continue
-            if rec.get(fld) is None:
+            if normalize_value(rec.get(fld)) is None:
                 rec[fld] = rule.default_value
                 applied.append(f"{rule.category}:{rule.field}")
 

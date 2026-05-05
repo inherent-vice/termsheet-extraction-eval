@@ -13,7 +13,7 @@ error patterns that mimic real LLM failure modes seen in production:
 
 | Error type | Affected products | Recovery stage |
 |-----------|-------------------|----------------|
-| `spread=null` on fixed-rate product | TS001, TS004, TS006, TS009, TS011, TS013, TS015, TS018, TS019 | Inference Cat C (v3) |
+| `spread=null` on fixed-rate product | TS001, TS004, TS006, TS009, TS011, TS013, TS015, TS018, TS019 | Constraint Group A (v2) |
 | `day_count=null` on KRW product | TS001, TS002, TS004, TS005, TS008, TS010, TS011, TS014, TS015, TS017, TS018, TS020 | Inference Cat A (v3) |
 | `option_holder=null` when option exists | TS001, TS004, TS006, TS009, TS011, TS013, TS015, TS019 | Inference Cat B (v3) |
 | `range bounds = ±9999` | TS003, TS008, TS014, TS020 | Constraint Group C (v2) |
